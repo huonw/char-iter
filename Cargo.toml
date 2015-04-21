@@ -3,5 +3,16 @@ name = "char-iter"
 version = "0.1.0"
 authors = ["Huon Wilson <dbau.pp@gmail.com>"]
 
+homepage = "https://github.com/huonw/char-iter"
+repository = "https://github.com/huonw/char-iter"
+documentation = "http://huonw.github.io/char-iter"
+license = "MIT/Apache-2.0"
+keywords = ["iterator", "unicode"]
+
+description = """
+A performant iterator over a linear range of characters (`char`s),
+correctly handling the surrogate range.
+"""
+
 [features]
 bench = []
