@@ -40,7 +40,7 @@
 //! assert_eq!(v, &['\u{D7FF}', '\u{E000}']);
 //! ```
 
-#![cfg_attr(all(test, feature = "bench"), feature(test))]
+#![cfg_attr(all(test, feature = "unstable"), feature(test))]
 
 /// An iterator over a linear range of characters.
 ///
@@ -256,7 +256,7 @@ mod tests {
         new('b','a');
     }
 }
-#[cfg(all(test, feature = "bench"))]
+#[cfg(all(test, feature = "unstable"))]
 mod benches {
     use super::*;
     extern crate test;
