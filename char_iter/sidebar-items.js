@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Iter","An iterator over a linear range of characters."]],"fn":[["new","Create a new iterator over the characters (specifically Unicode Scalar Values) from `start` to `end`, inclusive."]]});
