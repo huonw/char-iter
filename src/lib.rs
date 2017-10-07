@@ -45,10 +45,15 @@
 /// An iterator over a linear range of characters.
 ///
 /// This is constructed by the `new` function at the top level.
-pub struct Iter {
-    start: char,
-    end: char,
-    finished: bool,
+pub struct Iter(Range);
+
+#[derive(Copy, Clone)]
+enum Range {
+    Finished,
+    Range {
+        start: char,
+        end: char,
+    },
 }
 
 /// Create a new iterator over the characters (specifically Unicode
@@ -59,11 +64,12 @@ pub struct Iter {
 /// This panics if `start > end`.
 pub fn new(start: char, end: char) -> Iter {
     assert!(start <= end);
-    Iter {
-        start: start,
-        end: end,
-        finished: false
-    }
+    Iter(
+        Range::Range {
+            start: start,
+            end: end,
+        }
+    )
 }
 
 const SUR_START: u32 = 0xD800;
@@ -88,29 +94,35 @@ impl Iterator for Iter {
     type Item = char;
 
     fn next(&mut self) -> Option<char> {
-        if self.finished {
-            return None
+        match self.0 {
+            Range::Finished => None,
+            Range::Range { start, end } => {
+                let ret = Some(start);
+                *self = if start == end {
+                    Iter(Range::Finished)
+                } else {
+                    Iter(Range::Range {
+                        start: step(start, Dir::Forward),
+                        end: end,
+                    })
+                };
+                ret
+            }
         }
-        let ret = Some(self.start);
-        if self.start == self.end {
-            self.finished = true;
-        } else {
-            self.start = step(self.start, Dir::Forward)
-        }
-        ret
     }
 
     fn size_hint(&self) -> (usize, Option<usize>) {
-        let len = if self.finished {
-            0
-        } else {
-            let start = self.start as u32;
-            let end = self.end as u32;
-            let naive_count = (end - start + 1) as usize;
-            if start <= BEFORE_SUR && end >= AFTER_SUR {
-                naive_count - (SUR_END - SUR_START + 1) as usize
-            } else {
-                naive_count
+        let len = match self.0 {
+            Range::Finished => 0,
+            Range::Range { start, end } => {
+                let start = start as u32;
+                let end = end as u32;
+                let naive_count = (end - start + 1) as usize;
+                if start <= BEFORE_SUR && end >= AFTER_SUR {
+                    naive_count - (SUR_END - SUR_START + 1) as usize
+                } else {
+                    naive_count
+                }
             }
         };
         (len, Some(len))
@@ -118,16 +130,21 @@ impl Iterator for Iter {
 }
 impl DoubleEndedIterator for Iter {
     fn next_back(&mut self) -> Option<char> {
-        if self.finished {
-            return None
+        match self.0 {
+            Range::Finished => None,
+            Range::Range { start, end } => {
+                let ret = Some(end);
+                *self = if start == end {
+                    Iter(Range::Finished)
+                } else {
+                    Iter(Range::Range {
+                        start: start,
+                        end: step(end, Dir::Backward),
+                    })
+                };
+                ret
+            }
         }
-        let ret = Some(self.end);
-        if self.start == self.end {
-            self.finished = true;
-        } else {
-            self.end = step(self.end, Dir::Backward)
-        }
-        ret
     }
 }
 
